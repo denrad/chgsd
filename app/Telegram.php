@@ -52,13 +52,4 @@ class Telegram
         } while (!$result);
         return $result;
     }
-
-    public function sendDocument(File $document): Message
-    {
-        $this->bot->sendDocument(
-            $this->chatId,
-            $document->getContent(),
-            $document->getFilename()
-        );
-    }
 }

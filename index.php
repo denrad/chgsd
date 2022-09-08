@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use app\{Attachment, Db, Telegram, value\Article};
+use app\{Db, Telegram, value\Article};
 use voku\helper\HtmlDomParser;
 
 require_once 'vendor/autoload.php';
@@ -48,7 +48,6 @@ register_shutdown_function(static function() {
 
 $db = new Db(__DIR__ . '/runtime/articles.ser');
 $articles = getArticles();
-$documentService = new Attachment(new HtmlDomParser());
 
 $newArticles = array_udiff($articles, $db->toArray(), static function (Article $a, Article $b) {
     return $b->date <=> $a->date;
