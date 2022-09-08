@@ -1,0 +1,5 @@
+/vendor/
+/runtime/
+/.idea/
+.env
+.env.dev
