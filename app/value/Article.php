@@ -16,7 +16,7 @@ class Article
         return sprintf(
             "%s %s \n %s",
             \DateTime::createFromFormat('Y.m.d', $this->date)->format('d.m.Y'),
-            preg_replace('/\s{2,}/', '', html_entity_decode($this->text)),
+            $this->text,
             $this->url
         );
     }
@@ -25,5 +25,4 @@ class Article
     {
         return $this->getPrettyString();
     }
-
 }

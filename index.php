@@ -7,9 +7,8 @@ use voku\helper\HtmlDomParser;
 
 require_once 'vendor/autoload.php';
 
-function getPage(): string
+function getPage(string $url): string
 {
-    $url = $_ENV['PAGE_URL'];
     syslog(LOG_INFO, "Open URL {$url}");
     return file_get_contents($url);
 }
@@ -17,19 +16,20 @@ function getPage(): string
 /**
  * @return Article[]
  */
-function getArticles(): array
+function getArticles(string $url): array
 {
-    $dom = HtmlDomParser::str_get_html(getPage());
+    $dom = HtmlDomParser::str_get_html(getPage($url));
     $articles = [];
+
+    ['scheme' => $scheme, 'host' => $host] = parse_url($url);
+    $baseUrl = "$scheme://$host";
+
     foreach ($dom->find('.child_link a') as $link) {
         [$date, $text] = explode(' ', $link->text, 2);
-        $url = 'https://chgsd.cap.ru' . $link->getAttribute('href');
+        $url = $baseUrl . $link->getAttribute('href');
 
-        $articles[] = new Article(
-            $url,
-            $date,
-            $text
-        );
+        $text = preg_replace('/\s{2,}/', '', html_entity_decode($text));
+        $articles[] = new Article($url, $date, $text);
     }
 
     syslog(LOG_INFO, sprintf('Get %u links', count($articles)));
@@ -47,7 +47,7 @@ register_shutdown_function(static function() {
 });
 
 $db = new Db(__DIR__ . '/runtime/articles.ser');
-$articles = getArticles();
+$articles = getArticles($_ENV['PAGE_URL']);
 
 $newArticles = array_udiff($articles, $db->toArray(), static function (Article $a, Article $b) {
     return $b->date <=> $a->date;
@@ -55,15 +55,13 @@ $newArticles = array_udiff($articles, $db->toArray(), static function (Article $
 
 syslog(LOG_INFO, sprintf('Get %u new links', count($newArticles)));
 
-if (!$newArticles) {
-    exit(0);
-}
+if ($newArticles) {
+    $telegram = new Telegram($_ENV['TELEGRAM_TOKEN'], $_ENV['TELEGRAM_CHAT_ID']);
+    $telegram->setDebug($_ENV['DEBUG']);
 
-$telegram = new Telegram($_ENV['TELEGRAM_TOKEN'], $_ENV['TELEGRAM_CHAT_ID']);
-$telegram->setDebug($_ENV['DEBUG']);
-
-foreach ($newArticles as $article) {
-    syslog(LOG_INFO, "Send to Telegram '{$article->getPrettyString()}'");
-    $telegram->sendMessage((string)$article);
-    $db->append($article);
+    foreach ($newArticles as $article) {
+        syslog(LOG_INFO, "Send to Telegram '{$article->getPrettyString()}'");
+        $telegram->sendMessage((string)$article);
+        $db->append($article);
+    }
 }

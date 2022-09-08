@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace app;
 
-use app\value\File;
-use TelegramBot\Api\BotApi;
-use TelegramBot\Api\HttpException;
-use TelegramBot\Api\Types\Message;
+use TelegramBot\Api\{BotApi, HttpException, Types\Message};
 
 class Telegram
 {
     private BotApi $bot;
-
     private bool $debug = false;
 
     public function __construct(string $token, private readonly string $chatId)
@@ -43,6 +39,7 @@ class Telegram
                     $message
                 );
             } catch (HttpException $e) {
+                // Если слишком много обращений к API Telegram, ждем некоторое количество секунд
                 syslog(LOG_ERR, $e->getMessage());
                 if ($seconds = ($e->getParameters()['retry_after'] ?? null)) {
                     syslog(LOG_INFO, "Sleep {$seconds} sec");
