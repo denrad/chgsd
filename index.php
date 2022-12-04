@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use app\{Db, Telegram, value\Article};
+use app\{Db, DbSqlite, Telegram, value\Article};
 use voku\helper\HtmlDomParser;
 
 require_once 'vendor/autoload.php';
@@ -10,7 +10,12 @@ require_once 'vendor/autoload.php';
 function getPage(string $url): string
 {
     syslog(LOG_INFO, "Open URL {$url}");
-    return file_get_contents($url);
+    try {
+        return @file_get_contents($url);
+    } catch (\Throwable $e) {
+        syslog(LOG_ERR, "Error while open URL {$url}: {$e->getMessage()}");
+        return '';
+    }
 }
 
 /**
@@ -42,21 +47,19 @@ $dotenv->required(['PAGE_URL', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID', 'SYSLOG_PRE
 $dotenv->required(['DEBUG'])->isBoolean();
 
 openlog($_ENV['SYSLOG_PREFIX'] ?? 'chgsd', LOG_PID | LOG_PERROR, LOG_USER);
-register_shutdown_function(static function() {
+register_shutdown_function(static function () {
     closelog();
 });
 
-$db = new Db(__DIR__ . '/runtime/articles.ser');
+$db = new DbSqlite('articles');
 $articles = getArticles($_ENV['PAGE_URL']);
-
-$newArticles = array_udiff($articles, $db->toArray(), static function (Article $a, Article $b) {
-    return $b->date <=> $a->date;
-});
+$newArticles = array_udiff($articles, $db->toArray(), static fn(Article $a, Article $b) => $a->url <=> $b->url);
 
 syslog(LOG_INFO, sprintf('Get %u new links', count($newArticles)));
 
 if ($newArticles) {
     $telegram = new Telegram($_ENV['TELEGRAM_TOKEN'], $_ENV['TELEGRAM_CHAT_ID']);
+    $telegram->setEmulation(true);
     $telegram->setDebug($_ENV['DEBUG']);
 
     foreach ($newArticles as $article) {

@@ -10,15 +10,11 @@ class Telegram
 {
     private BotApi $bot;
     private bool $debug = false;
+    private bool $emulation = false;
 
     public function __construct(string $token, private readonly string $chatId)
     {
         $this->bot = new BotApi($token);
-    }
-
-    public function getDebug(): bool
-    {
-        return $this->debug;
     }
 
     public function setDebug($debug = true): void
@@ -29,8 +25,17 @@ class Telegram
         $this->debug = $debug;
     }
 
-    public function sendMessage(string $message): Message
+    public function setEmulation(bool $emulation = true): void
     {
+        $this->emulation = $emulation;
+    }
+
+    public function sendMessage(string $message): ?Message
+    {
+        if ($this->emulation) {
+            return null;
+        }
+
         $result = null;
         do {
             try {

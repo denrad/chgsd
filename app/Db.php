@@ -6,7 +6,7 @@ namespace app;
 
 use app\value\Article;
 
-class Db
+class Db implements DbInterface
 {
     public readonly string $filename;
     private array $structure = [];

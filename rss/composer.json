@@ -1,0 +1,24 @@
+{
+    "name": "rdm/rss",
+    "autoload": {
+        "psr-4": {
+            "app\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Denis Radchenko",
+            "email": "denis@doomer.ru"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "ext-json": "*",
+        "ext-curl": "*",
+        "laminas/laminas-feed": "^2.18"
+    }
+    ,
+    "require-dev": {
+        "roave/security-advisories": "dev-latest"
+    }
+}

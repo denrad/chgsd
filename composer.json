@@ -19,9 +19,14 @@
     "ext-json": "*",
     "ext-curl": "*",
     "ext-dom": "*",
+    "symfony/console": "^5.2",
+    "vlucas/phpdotenv": "^5.3",
     "voku/simple_html_dom": "^4.8",
     "telegram-bot/api": "^2.3",
-    "vlucas/phpdotenv": "^5.4"
+    "guzzlehttp/guzzle": "^7.5",
+    "gmponos/guzzle_logger": "^2.2",
+    "monolog/monolog": "^3.2",
+    "ext-pdo": "*"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

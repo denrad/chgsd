@@ -17,3 +17,9 @@
 3) Зарегистрировать бота в Telegram
 4) Прописать токен бота и ID чата в .env
 5) Добавить скрипт в `crontab`
+
+Планы по разработке: 
+* Хранить список обработанных статей в базе данных (облачная бд или pdo/sqlite)
+* Размещать скрипт в yandex serverless function
+  * Разработать Github action для публикации кода на [yandex functions](https://github.com/marketplace/actions/yandex-serverless-action) 
+* Генерировать RSS XML файл

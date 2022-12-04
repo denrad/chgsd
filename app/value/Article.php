@@ -2,7 +2,7 @@
 
 namespace app\value;
 
-class Article
+class Article extends Basic implements \Stringable
 {
     public function __construct(
         public readonly string $url,
